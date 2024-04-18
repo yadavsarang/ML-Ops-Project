@@ -1,0 +1,33 @@
+pipeline {
+    agent any
+    stages {
+        stage('Build') {
+            steps {
+                git 'https://github.com/sh1vvy/MLOps_Project.git'
+                script {
+                    docker.build("zh1vs/mlops_1")
+                }
+            }
+        }
+        stage('Deploy') {
+            steps {
+                script {
+                    docker.image("zh1vs/mlops_1").run("-p 4001:3000 --name salary_prediction_container_1")
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                bat """
+                    docker image rm -f zh1vs/mlops_1
+                    docker container stop salary_prediction_container_1
+                    docker container rm -f salary_prediction_container_1
+                """
+            }
+            
+        }
+        
+    }
+}
